@@ -1,0 +1,128 @@
+- name: Install Essential Tools and Services
+  hosts: server
+  become: yes
+  tasks:
+
+    - name: Update package lists
+      apt:
+        update_cache: yes
+
+    - name: Install Basic Utilities
+      apt:
+        name:
+          - curl
+          - unzip
+          - zip
+          - wget
+          - tree
+          - top
+        state: present
+
+    - name: Install Node.js and npm
+      shell: curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+
+    - name: Install Dotnet SDK
+      shell: |
+        wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+        sudo dpkg -i packages-microsoft-prod.deb
+        sudo apt-get update
+        sudo apt-get install -y dotnet-sdk-6.0
+
+    - name: Install Java (OpenJDK 17)
+      apt:
+        name: openjdk-17-jdk
+        state: present
+
+    - name: Install Python
+      apt:
+        name: python3
+        state: present
+
+    - name: Install Azure CLI
+      shell: |
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+    - name: Install AWS CLI
+      shell: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install
+
+    - name: Install GCP CLI (Google Cloud SDK)
+      shell: |
+        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+        sudo apt-get install apt-transport-https ca-certificates -y
+        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+        sudo apt-get update && sudo apt-get install -y google-cloud-sdk
+
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+
+    - name: Install Docker
+      shell: |
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sh get-docker.sh
+
+    - name: Install SonarQube
+      shell: |
+        sudo apt install openjdk-11-jdk -y
+        wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.3.zip
+        unzip sonarqube-9.9.3.zip -d /opt
+        mv /opt/sonarqube-9.9.3 /opt/sonarqube
+
+    - name: Install MySQL
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Install PostgreSQL
+      apt:
+        name: postgresql
+        state: present
+
+    - name: Install MongoDB
+      shell: |
+        curl -fsSL https://pgp.mongodb.com/server-7.0.asc | sudo tee /usr/share/keyrings/mongodb-server-7.0.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+        sudo apt-get update && sudo apt-get install -y mongodb-org
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Install Ansible
+      apt:
+        name: ansible
+        state: present
+
+    - name: Install Terraform
+      shell: |
+        wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+        sudo apt update && sudo apt install terraform -y
+
+    - name: Install Grafana
+      shell: |
+        sudo apt-get install -y software-properties-common
+        sudo add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"
+        wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+        sudo apt-get update && sudo apt-get install grafana -y
+
+    - name: Install Prometheus
+      shell: |
+        sudo useradd --no-create-home --shell /bin/false prometheus
+        sudo mkdir /etc/prometheus
+        sudo mkdir /var/lib/prometheus
+        cd /tmp
+        curl -LO https://github.com/prometheus/prometheus/releases/download/v2.37.0/prometheus-2.37.0.linux-amd64.tar.gz
+        tar xvf prometheus-2.37.0.linux-amd64.tar.gz
+        sudo mv prometheus-2.37.0.linux-amd64/prometheus /usr/local/bin/
+        sudo mv prometheus-2.37.0.linux-amd64/promtool /usr/local/bin/
