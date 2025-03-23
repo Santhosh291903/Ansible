@@ -1,0 +1,193 @@
+import os
+
+# Define available tools
+tools = {
+    1: ("Node.js & npm", """    
+    - name: Install Node.js and npm
+      shell: curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+    """),
+    
+    2: ("Dotnet SDK", """    
+    - name: Install Dotnet SDK
+      apt:
+        name: dotnet-sdk-6.0
+        state: present
+    """),
+
+    3: ("Java (OpenJDK 17)", """    
+    - name: Install Java (OpenJDK 17)
+      apt:
+        name: openjdk-17-jdk
+        state: present
+    """),
+
+    4: ("Python", """    
+    - name: Install Python
+      apt:
+        name: python3
+        state: present
+    """),
+
+    5: ("Azure CLI", """    
+    - name: Install Azure CLI
+      shell: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    """),
+
+    6: ("AWS CLI", """    
+    - name: Install AWS CLI
+      shell: curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    """),
+
+    7: ("GCP CLI", """    
+    - name: Install GCP CLI
+      shell: curl -sSL https://sdk.cloud.google.com | bash
+    """),
+
+    8: ("Git", """    
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+    """),
+
+    9: ("Docker", """    
+    - name: Install Docker
+      shell: |
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sh get-docker.sh
+    """),
+
+    10: ("SonarQube", """    
+    - name: Install SonarQube
+      apt:
+        name: sonarqube
+        state: present
+    """),
+
+    11: ("SonarScanner", """    
+    - name: Install SonarScanner
+      apt:
+        name: sonar-scanner
+        state: present
+    """),
+
+    12: ("MySQL", """    
+    - name: Install MySQL
+      apt:
+        name: mysql-server
+        state: present
+    """),
+
+    13: ("PostgreSQL", """    
+    - name: Install PostgreSQL
+      apt:
+        name: postgresql
+        state: present
+    """),
+
+    14: ("MongoDB", """    
+    - name: Install MongoDB
+      shell: |
+        wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
+        echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+        sudo apt update
+        sudo apt install -y mongodb-org
+    """),
+
+    15: ("Nginx", """    
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+    """),
+
+    16: ("Ansible", """    
+    - name: Install Ansible
+      apt:
+        name: ansible
+        state: present
+    """),
+
+    17: ("Terraform", """    
+    - name: Install Terraform
+      shell: |
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt update
+        sudo apt install terraform
+    """),
+
+    18: ("Grafana", """    
+    - name: Install Grafana
+      shell: |
+        sudo apt-get install -y software-properties-common
+        sudo add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"
+        sudo apt-get update
+        sudo apt-get install grafana
+    """),
+
+    19: ("Prometheus", """    
+    - name: Install Prometheus
+      shell: |
+        wget https://github.com/prometheus/prometheus/releases/latest/download/prometheus-*.linux-amd64.tar.gz
+        tar xvfz prometheus-*.linux-amd64.tar.gz
+        sudo mv prometheus-*.linux-amd64 /usr/local/bin/prometheus
+    """),
+
+    20: ("Kubernetes Tools (kubectl, kubeadm, kubelet)", """    
+    - name: Install Kubernetes Tools
+      apt:
+        name:
+          - kubectl
+          - kubeadm
+          - kubelet
+        state: present
+    """),
+
+    21: ("Helm", """    
+    - name: Install Helm
+      shell: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+    """),
+
+    22: ("ELK Stack (Elasticsearch, Logstash, Kibana)", """    
+    - name: Install ELK Stack
+      apt:
+        name:
+          - elasticsearch
+          - logstash
+          - kibana
+        state: present
+    """),
+}
+
+# Display the tool options
+print("\nAvailable Tools:")
+for key, value in tools.items():
+    print(f"{key}. {value[0]}")
+
+# Get user selection
+selected_numbers = input("\nEnter the numbers of the tools you want to install (comma-separated): ")
+selected_numbers = [int(x.strip()) for x in selected_numbers.split(",") if x.strip().isdigit()]
+
+# Generate Ansible YAML file
+ansible_content = """- name: Install Selected Tools
+  hosts: server
+  become: yes
+  tasks:
+"""
+
+for num in selected_numbers:
+    if num in tools:
+        ansible_content += tools[num][1] + "\n"
+
+# Save to install_tools.yml
+with open("install_tools.yml", "w") as file:
+    file.write(ansible_content)
+
+print("\n✅ Ansible playbook `install_tools.yml` has been generated successfully!")
